@@ -1,0 +1,361 @@
+openapi: 3.0.3
+info:
+  title: Library Lending API
+  version: 1.0.0
+  description: Номын сангийн ном зээлэх систем
+
+servers:
+  - url: http://localhost:3000
+    description: Local development
+
+paths:
+  /books:
+    get:
+      summary: Номын жагсаалт
+      parameters:
+        - name: author
+          in: query
+          schema: { type: string }
+        - name: available
+          in: query
+          schema: { type: boolean }
+        - name: sort
+          in: query
+          schema: { type: string, enum: [title, author] }
+        - name: page
+          in: query
+          schema: { type: integer, default: 1 }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 10 }
+      responses:
+        '200':
+          description: Амжилттай
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Book' }
+                  page: { type: integer }
+                  limit: { type: integer }
+                  total: { type: integer }
+
+    post:
+      summary: Шинэ ном нэмэх
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, author, isbn]
+              properties:
+                title: { type: string }
+                author: { type: string }
+                isbn: { type: string }
+      responses:
+        '201':
+          description: Ном үүслээ
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Book' }
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /books/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      summary: Ном дэлгэрэнгүй
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Book' }
+          description: Амжилттай
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      summary: Ном засах
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title: { type: string }
+                author: { type: string }
+      responses:
+        '200':
+          description: Засагдлаа
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Book' }
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      summary: Ном устгах
+      responses:
+        '204':
+          description: Устгагдлаа
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /members:
+    get:
+      summary: Гишүүдийн жагсаалт
+      responses:
+        '200':
+          description: Амжилттай
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Member' }
+    post:
+      summary: Шинэ гишүүн нэмэх
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email]
+              properties:
+                name: { type: string }
+                email: { type: string, format: email }
+      responses:
+        '201':
+          description: Гишүүн үүслээ
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Member' }
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /members/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      summary: Гишүүн дэлгэрэнгүй
+      responses:
+        '200':
+          description: Амжилттай
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Member' }
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /loans:
+    get:
+      summary: Зээлийн жагсаалт
+      parameters:
+        - name: memberId
+          in: query
+          schema: { type: string }
+        - name: active
+          in: query
+          schema: { type: boolean }
+      responses:
+        '200':
+          description: Амжилттай
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Loan' }
+    post:
+      summary: Ном зээлэх
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [bookId, memberId]
+              properties:
+                bookId: { type: string }
+                memberId: { type: string }
+      responses:
+        '201':
+          description: Зээл үүслээ
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Loan' }
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /loans/{id}/return:
+    patch:
+      summary: Ном буцаах
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Буцаагдлаа
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Loan' }
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /loans/{id}/extend:
+    patch:
+      summary: Зээл сунгах
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Сунгагдлаа
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Loan' }
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /reservations:
+    get:
+      summary: Захиалгын жагсаалт
+      responses:
+        '200':
+          description: Амжилттай
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Reservation' }
+    post:
+      summary: Ном захиалах
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [bookId, memberId]
+              properties:
+                bookId: { type: string }
+                memberId: { type: string }
+      responses:
+        '201':
+          description: Захиалга үүслээ
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Reservation' }
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /reservations/{id}:
+    delete:
+      summary: Захиалга цуцлах
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '204':
+          description: Цуцлагдлаа
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  schemas:
+    Book:
+      type: object
+      properties:
+        id: { type: string }
+        title: { type: string }
+        author: { type: string }
+        isbn: { type: string }
+        available: { type: boolean }
+        createdAt: { type: string, format: date-time }
+
+    Member:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        email: { type: string }
+        createdAt: { type: string, format: date-time }
+
+    Loan:
+      type: object
+      properties:
+        id: { type: string }
+        bookId: { type: string }
+        memberId: { type: string }
+        borrowedAt: { type: string, format: date-time }
+        dueAt: { type: string, format: date-time }
+        returnedAt: { type: string, format: date-time, nullable: true }
+        extended: { type: boolean }
+
+    Reservation:
+      type: object
+      properties:
+        id: { type: string }
+        bookId: { type: string }
+        memberId: { type: string }
+        reservedAt: { type: string, format: date-time }
+
+    Problem:
+      type: object
+      properties:
+        type: { type: string }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+
+  responses:
+    NotFound:
+      description: Олдсонгүй
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Conflict:
+      description: Зөрчил
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    UnprocessableEntity:
+      description: Буруу оролт
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
