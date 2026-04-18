@@ -9,12 +9,10 @@ const app = express();
 app.use(express.json());
 
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));
-
 app.use('/books', booksRouter);
 app.use('/members', membersRouter);
 app.use('/loans', loansRouter);
 app.use('/reservations', reservationsRouter);
-
 app.use(notFound);
 app.use(errorHandler);
 
