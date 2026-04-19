@@ -12,312 +12,122 @@
   "item": [
     {
       "name": "1. Health Check",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": { "raw": "{{baseUrl}}/health", "host": ["{{baseUrl}}"], "path": ["health"] }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('Status is 200', function() { pm.response.to.have.status(200); });",
-              "pm.test('Status ok', function() { pm.expect(pm.response.json().status).to.eql('ok'); });"
-            ]
-          }
-        }
-      ]
+      "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/health", "host": ["{{baseUrl}}"], "path": ["health"] } },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 200', function() { pm.response.to.have.status(200); });",
+        "pm.test('Status ok', function() { pm.expect(pm.response.json().status).to.eql('ok'); });"
+      ]}}]
     },
     {
       "name": "2. Get all books",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": { "raw": "{{baseUrl}}/books", "host": ["{{baseUrl}}"], "path": ["books"] }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('Status is 200', function() { pm.response.to.have.status(200); });",
-              "pm.test('Has data array', function() { pm.expect(pm.response.json()).to.have.property('data'); });",
-              "var books = pm.response.json().data;",
-              "if (books.length > 0) { pm.collectionVariables.set('bookId', books[0].id); }"
-            ]
-          }
-        }
-      ]
+      "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/books", "host": ["{{baseUrl}}"], "path": ["books"] } },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 200', function() { pm.response.to.have.status(200); });",
+        "pm.test('Has data array', function() { pm.expect(pm.response.json()).to.have.property('data'); });"
+      ]}}]
     },
     {
       "name": "3. Get books pagination",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": { "raw": "{{baseUrl}}/books?page=1&limit=2", "host": ["{{baseUrl}}"], "path": ["books"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "2" }] }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('Status is 200', function() { pm.response.to.have.status(200); });",
-              "pm.test('Limit works', function() { pm.expect(pm.response.json().data.length).to.be.at.most(2); });"
-            ]
-          }
-        }
-      ]
+      "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/books?page=1&limit=2", "host": ["{{baseUrl}}"], "path": ["books"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "2" }] } },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 200', function() { pm.response.to.have.status(200); });",
+        "pm.test('Limit works', function() { pm.expect(pm.response.json().data.length).to.be.at.most(2); });"
+      ]}}]
     },
     {
-      "name": "4. Create book",
-      "request": {
-        "method": "POST",
-        "header": [{ "key": "Content-Type", "value": "application/json" }],
-        "body": { "mode": "raw", "raw": "{\"title\": \"Test Book\", \"author\": \"Test Author\", \"isbn\": \"978-0000000001\"}" },
-        "url": { "raw": "{{baseUrl}}/books", "host": ["{{baseUrl}}"], "path": ["books"] }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('Status is 201', function() { pm.response.to.have.status(201); });",
-              "pm.test('Has id', function() { pm.expect(pm.response.json()).to.have.property('id'); });",
-              "pm.collectionVariables.set('bookId', pm.response.json().id);"
-            ]
-          }
-        }
-      ]
+      "name": "4. Create member",
+      "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"name\": \"Postman User\", \"email\": \"postman@test.com\"}" }, "url": { "raw": "{{baseUrl}}/members", "host": ["{{baseUrl}}"], "path": ["members"] } },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 201', function() { pm.response.to.have.status(201); });",
+        "pm.test('Has id', function() { pm.expect(pm.response.json()).to.have.property('id'); });",
+        "pm.environment.set('memberId', pm.response.json().id);"
+      ]}}]
     },
     {
-      "name": "5. Create book missing fields 422",
-      "request": {
-        "method": "POST",
-        "header": [{ "key": "Content-Type", "value": "application/json" }],
-        "body": { "mode": "raw", "raw": "{\"title\": \"No Author\"}" },
-        "url": { "raw": "{{baseUrl}}/books", "host": ["{{baseUrl}}"], "path": ["books"] }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('Status is 422', function() { pm.response.to.have.status(422); });",
-              "pm.test('Problem json', function() { pm.expect(pm.response.json()).to.have.property('type'); });"
-            ]
-          }
-        }
-      ]
+      "name": "5. Create member duplicate 409",
+      "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"name\": \"Postman User\", \"email\": \"postman@test.com\"}" }, "url": { "raw": "{{baseUrl}}/members", "host": ["{{baseUrl}}"], "path": ["members"] } },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 409', function() { pm.response.to.have.status(409); });"
+      ]}}]
     },
     {
-      "name": "6. Get book not found 404",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": { "raw": "{{baseUrl}}/books/fake-id-999", "host": ["{{baseUrl}}"], "path": ["books", "fake-id-999"] }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('Status is 404', function() { pm.response.to.have.status(404); });",
-              "pm.test('Problem detail', function() { pm.expect(pm.response.json().status).to.eql(404); });"
-            ]
-          }
-        }
-      ]
+      "name": "6. Create book",
+      "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"title\": \"Test Book\", \"author\": \"Test Author\", \"isbn\": \"978-0000000001\"}" }, "url": { "raw": "{{baseUrl}}/books", "host": ["{{baseUrl}}"], "path": ["books"] } },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 201', function() { pm.response.to.have.status(201); });",
+        "pm.test('Has id', function() { pm.expect(pm.response.json()).to.have.property('id'); });",
+        "pm.environment.set('bookId', pm.response.json().id);"
+      ]}}]
     },
     {
-      "name": "7. Create member",
-      "request": {
-        "method": "POST",
-        "header": [{ "key": "Content-Type", "value": "application/json" }],
-        "body": { "mode": "raw", "raw": "{\"name\": \"Postman User\", \"email\": \"postman@test.com\"}" },
-        "url": { "raw": "{{baseUrl}}/members", "host": ["{{baseUrl}}"], "path": ["members"] }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('Status is 201', function() { pm.response.to.have.status(201); });",
-              "pm.test('Has id', function() { pm.expect(pm.response.json()).to.have.property('id'); });",
-              "pm.collectionVariables.set('memberId', pm.response.json().id);"
-            ]
-          }
-        }
-      ]
+      "name": "7. Create book missing fields 422",
+      "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"title\": \"No Author\"}" }, "url": { "raw": "{{baseUrl}}/books", "host": ["{{baseUrl}}"], "path": ["books"] } },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 422', function() { pm.response.to.have.status(422); });",
+        "pm.test('Problem json', function() { pm.expect(pm.response.json()).to.have.property('type'); });"
+      ]}}]
     },
     {
-      "name": "8. Create member duplicate 409",
-      "request": {
-        "method": "POST",
-        "header": [{ "key": "Content-Type", "value": "application/json" }],
-        "body": { "mode": "raw", "raw": "{\"name\": \"Postman User\", \"email\": \"postman@test.com\"}" },
-        "url": { "raw": "{{baseUrl}}/members", "host": ["{{baseUrl}}"], "path": ["members"] }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('Status is 409', function() { pm.response.to.have.status(409); });"
-            ]
-          }
-        }
-      ]
+      "name": "8. Get book not found 404",
+      "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/books/fake-id-999", "host": ["{{baseUrl}}"], "path": ["books", "fake-id-999"] } },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 404', function() { pm.response.to.have.status(404); });",
+        "pm.test('Problem detail', function() { pm.expect(pm.response.json().status).to.eql(404); });"
+      ]}}]
     },
     {
       "name": "9. Borrow book chained",
-      "request": {
-        "method": "POST",
-        "header": [{ "key": "Content-Type", "value": "application/json" }],
-        "body": { "mode": "raw", "raw": "{\"bookId\": \"{{bookId}}\", \"memberId\": \"{{memberId}}\"}" },
-        "url": { "raw": "{{baseUrl}}/loans", "host": ["{{baseUrl}}"], "path": ["loans"] }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('Status is 201', function() { pm.response.to.have.status(201); });",
-              "pm.test('Loan created', function() { pm.expect(pm.response.json().returnedAt).to.be.null; });",
-              "pm.collectionVariables.set('loanId', pm.response.json().id);"
-            ]
-          }
-        }
-      ]
+      "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"bookId\": \"{{bookId}}\", \"memberId\": \"{{memberId}}\"}" }, "url": { "raw": "{{baseUrl}}/loans", "host": ["{{baseUrl}}"], "path": ["loans"] } },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 201', function() { pm.response.to.have.status(201); });",
+        "pm.test('Loan created', function() { pm.expect(pm.response.json().returnedAt).to.be.null; });",
+        "pm.environment.set('loanId', pm.response.json().id);"
+      ]}}]
     },
     {
       "name": "10. Borrow same book 409",
-      "request": {
-        "method": "POST",
-        "header": [{ "key": "Content-Type", "value": "application/json" }],
-        "body": { "mode": "raw", "raw": "{\"bookId\": \"{{bookId}}\", \"memberId\": \"{{memberId}}\"}" },
-        "url": { "raw": "{{baseUrl}}/loans", "host": ["{{baseUrl}}"], "path": ["loans"] }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('Status is 409', function() { pm.response.to.have.status(409); });"
-            ]
-          }
-        }
-      ]
+      "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"bookId\": \"{{bookId}}\", \"memberId\": \"{{memberId}}\"}" }, "url": { "raw": "{{baseUrl}}/loans", "host": ["{{baseUrl}}"], "path": ["loans"] } },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 409', function() { pm.response.to.have.status(409); });"
+      ]}}]
     },
     {
       "name": "11. Extend loan chained",
-      "request": {
-        "method": "PATCH",
-        "header": [],
-        "url": { "raw": "{{baseUrl}}/loans/{{loanId}}/extend", "host": ["{{baseUrl}}"], "path": ["loans", "{{loanId}}", "extend"] }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('Status is 200', function() { pm.response.to.have.status(200); });",
-              "pm.test('Extended is true', function() { pm.expect(pm.response.json().extended).to.be.true; });"
-            ]
-          }
-        }
-      ]
+      "request": { "method": "PATCH", "header": [], "url": { "raw": "{{baseUrl}}/loans/{{loanId}}/extend", "host": ["{{baseUrl}}"], "path": ["loans", "{{loanId}}", "extend"] } },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 200', function() { pm.response.to.have.status(200); });",
+        "pm.test('Extended is true', function() { pm.expect(pm.response.json().extended).to.be.true; });"
+      ]}}]
     },
     {
       "name": "12. Extend loan again 409",
-      "request": {
-        "method": "PATCH",
-        "header": [],
-        "url": { "raw": "{{baseUrl}}/loans/{{loanId}}/extend", "host": ["{{baseUrl}}"], "path": ["loans", "{{loanId}}", "extend"] }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('Status is 409', function() { pm.response.to.have.status(409); });"
-            ]
-          }
-        }
-      ]
+      "request": { "method": "PATCH", "header": [], "url": { "raw": "{{baseUrl}}/loans/{{loanId}}/extend", "host": ["{{baseUrl}}"], "path": ["loans", "{{loanId}}", "extend"] } },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 409', function() { pm.response.to.have.status(409); });"
+      ]}}]
     },
     {
       "name": "13. Return book chained",
-      "request": {
-        "method": "PATCH",
-        "header": [],
-        "url": { "raw": "{{baseUrl}}/loans/{{loanId}}/return", "host": ["{{baseUrl}}"], "path": ["loans", "{{loanId}}", "return"] }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('Status is 200', function() { pm.response.to.have.status(200); });",
-              "pm.test('Has returnedAt', function() { pm.expect(pm.response.json().returnedAt).to.not.be.null; });"
-            ]
-          }
-        }
-      ]
+      "request": { "method": "PATCH", "header": [], "url": { "raw": "{{baseUrl}}/loans/{{loanId}}/return", "host": ["{{baseUrl}}"], "path": ["loans", "{{loanId}}", "return"] } },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 200', function() { pm.response.to.have.status(200); });",
+        "pm.test('Has returnedAt', function() { pm.expect(pm.response.json().returnedAt).to.not.be.null; });"
+      ]}}]
     },
     {
       "name": "14. Reserve book chained",
-      "request": {
-        "method": "POST",
-        "header": [{ "key": "Content-Type", "value": "application/json" }],
-        "body": { "mode": "raw", "raw": "{\"bookId\": \"{{bookId}}\", \"memberId\": \"{{memberId}}\"}" },
-        "url": { "raw": "{{baseUrl}}/reservations", "host": ["{{baseUrl}}"], "path": ["reservations"] }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('Status is 201', function() { pm.response.to.have.status(201); });",
-              "pm.test('Has id', function() { pm.expect(pm.response.json()).to.have.property('id'); });"
-            ]
-          }
-        }
-      ]
+      "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"bookId\": \"{{bookId}}\", \"memberId\": \"{{memberId}}\"}" }, "url": { "raw": "{{baseUrl}}/reservations", "host": ["{{baseUrl}}"], "path": ["reservations"] } },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 201', function() { pm.response.to.have.status(201); });",
+        "pm.test('Has id', function() { pm.expect(pm.response.json()).to.have.property('id'); });"
+      ]}}]
     },
     {
       "name": "15. Reserve nonexistent book 404",
-      "request": {
-        "method": "POST",
-        "header": [{ "key": "Content-Type", "value": "application/json" }],
-        "body": { "mode": "raw", "raw": "{\"bookId\": \"fake-book-id\", \"memberId\": \"{{memberId}}\"}" },
-        "url": { "raw": "{{baseUrl}}/reservations", "host": ["{{baseUrl}}"], "path": ["reservations"] }
-      },
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('Status is 404', function() { pm.response.to.have.status(404); });"
-            ]
-          }
-        }
-      ]
+      "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\"bookId\": \"fake-book-id\", \"memberId\": \"{{memberId}}\"}" }, "url": { "raw": "{{baseUrl}}/reservations", "host": ["{{baseUrl}}"], "path": ["reservations"] } },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status is 404', function() { pm.response.to.have.status(404); });"
+      ]}}]
     }
   ]
 }
